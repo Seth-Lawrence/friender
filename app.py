@@ -68,7 +68,7 @@ def get_users():
 def get_user_by_id(id):
     '''Returns all user data for one user'''
 
-    user = User.query.one_or_none(id)
+    user = User.query.filter(User.id==id).one_or_none()
 
     return jsonify(user=user)
 
@@ -79,7 +79,7 @@ def edit_user():
     '''optionally edits user first name, last name, profile image
     zip code, and friend radius. returns updated user json'''
 
-    user = User.query.one_or_none(id)
+    user = User.query.filter(User.id==id).one_or_none()
 
     form = request.json
 

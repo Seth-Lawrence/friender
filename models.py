@@ -200,6 +200,22 @@ class User(db.Model):
 
         return False
 
+    @classmethod
+    def validate_token(cls, token):
+        '''Checks if token is valid and if user is in db, returns user if so
+        otherwise returns false'''
+
+        username_from_token = jwt.decode(token,
+                                         os.environ.get('SECRET_KEY'),
+                                         algorithms=['HS256'])
+
+        user = User.query.filter(User.username==username_from_token).one_or_none()
+
+        if user:
+            return user
+        else:
+            return False
+
 
 class UserInterests(db.Model):
     '''Model for user-interest combinations'''
