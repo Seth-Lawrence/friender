@@ -99,13 +99,27 @@ def edit_user():
 ### LIKE ROUTES
 
 @app.post('/api/users/<int:id>/like')
-def like():
-    '''likes user'''
-    ...
+def like(id):
+    '''likes user, returning liked_user_id'''
+
+    token = request.json['token']
+
+    liking_user = User.validate_token(token)
+    liking_user.likes.push(id)
+    db.session.add(liking_user)
+    db.session.commit()
+    return jsonify(liked_user_id=id)
 
 
 @app.post('/api/users/<int:id>/dislike')
 def dislike():
-    '''dislikes user'''
-    ...
+    '''dislikes user, returning disliked_user_id'''
+    token = request.json['token']
+
+    disliking_user = User.validate_token(token)
+    disliking_user.likes.push(id)
+    db.session.add(disliking_user)
+    db.session.commit()
+    return jsonify(disliked_user_id=id)
+
 
