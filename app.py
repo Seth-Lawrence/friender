@@ -98,13 +98,13 @@ def edit_user():
 
 ### LIKE ROUTES
 
-@app.post('/api/like')
+@app.post('/api/users/<int:id>/like')
 def like():
     '''likes user'''
     ...
 
 
-@app.post('/api/dislike')
+@app.post('/api/users/<int:id>/dislike')
 def dislike():
     '''dislikes user'''
     ...
