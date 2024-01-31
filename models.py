@@ -148,7 +148,7 @@ class User(db.Model):
                friend_radius,
                profile_image=DEFAULT_IMAGE_URL
                ):
-        '''Hashes password and adds user to db. Returns user'''
+        '''Hashes password and adds user to db. Returns token'''
 
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
         user = User(first_name=first_name,
@@ -162,7 +162,7 @@ class User(db.Model):
         payload = {
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
             'iat': datetime.datetime.utcnow(),
-            'sub': user.id
+            'sub': user.username
         }
 
         db.session.add(user)
@@ -187,7 +187,7 @@ class User(db.Model):
                 payload = {
                     'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
                     'iat': datetime.datetime.utcnow(),
-                    'sub': user.id
+                    'sub': user.username
                 }
 
                 return jwt.encode(
