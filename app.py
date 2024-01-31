@@ -11,3 +11,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 connect_db(app)
 
+@app.get("/users/<int: id>")
+def get_user_by_id(id):
+    '''Returns all user data for one user'''
+
