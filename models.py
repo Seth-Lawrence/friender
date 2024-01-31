@@ -1,4 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy, CheckConstraint
+from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 
 bcrypt = Bcrypt()
@@ -103,7 +103,7 @@ class User(db.Model):
 
     friend_radius=db.Column(
         db.Integer,
-        CheckConstraint("friend_radius>0"),
+        db.CheckConstraint("friend_radius>0"),
         nullable=True
     )
 
