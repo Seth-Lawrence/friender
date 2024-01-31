@@ -11,10 +11,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 connect_db(app)
 
-@app.get("/api/users/<int:id>")
-def get_user_by_id(id):
-    '''Returns all user data for one user'''
-    ...
+
+
+#### signup / login routes
+
 
 @app.post("/api/signup")
 def add_user():
@@ -35,3 +35,77 @@ def add_user():
     return jsonify(token=token)
     # except:
         # raise Error()
+
+
+@app.post('/api/login')
+def login():
+    user_creds = request.body
+
+    username = user_creds.username
+    password = user_creds.password
+
+    token = User.validate_login(username, password) # token or false
+
+    return jsonify(token=token)
+
+
+@app.post('/api/logout')
+def logout():
+    ...
+
+
+
+### USER ROUTES
+
+@app.get('/api/users')
+def get_users():
+    '''gets all users returns json of users'''
+    users = User.query.all()
+    return jsonify(users=users)
+
+
+@app.get("/api/users/<int:id>")
+def get_user_by_id(id):
+    '''Returns all user data for one user'''
+
+    user = User.query.one_or_none(id)
+
+    return jsonify(user=user)
+
+
+
+@app.patch('/api/user/<id>/edit')
+def edit_user():
+    '''optionally edits user first name, last name, profile image
+    zip code, and friend radius. returns updated user json'''
+
+    user = User.query.one_or_none(id)
+
+    form = request.json
+
+    user.first_name = form.first_name or user.first_name
+    user.last_name = form.last_name or user.last_name
+    user.profile_image = form.profile_image or user.profile_image
+    user.zip_code = form.zip_code or user.zip_code
+    user.friend_radius = form.friend_radius or user.friend_radius
+
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify(user=user)
+
+
+### LIKE ROUTES
+
+@app.post('/api/like')
+def like():
+    '''likes user'''
+    ...
+
+
+@app.post('/api/dislike')
+def dislike():
+    '''dislikes user'''
+    ...
+

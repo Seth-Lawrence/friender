@@ -1,4 +1,6 @@
 import os
+#TODO: to ask: should we be importing app and using that instad of os for our
+# secret key.
 
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
