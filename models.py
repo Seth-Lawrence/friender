@@ -1,11 +1,17 @@
+import os
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
+import jwt
+import datetime
+
 
 bcrypt = Bcrypt()
-DEFAULT_IMAGE_URL='https://images.unsplash.com/photo-1509987300714-11c90a6d40e7?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' #TODO: Populate this
+DEFAULT_IMAGE_URL = 'https://images.unsplash.com/photo-1509987300714-11c90a6d40e7?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'  # TODO: Populate this
 
 
 db = SQLAlchemy()
+
 
 def connect_db(app):
     '''connect to db'''
@@ -21,7 +27,7 @@ class UserDislikes(db.Model):
     __tablename__ = 'disliked_users'
 
     # If user A dislikes user B, this is user A
-    disliking_user_id=db.Column(
+    disliking_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True,
@@ -29,12 +35,13 @@ class UserDislikes(db.Model):
     )
 
     # If user A dislikes user B, this is user B
-    disliked_user_id=db.Column(
+    disliked_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True,
         nullable=False
     )
+
 
 class UserLikes(db.Model):
     '''Model for users that have voted yes on another'''
@@ -42,7 +49,7 @@ class UserLikes(db.Model):
     __tablename__ = 'liked_users'
 
     # If user A likes user B, this is user A
-    liking_user_id=db.Column(
+    liking_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True,
@@ -50,7 +57,7 @@ class UserLikes(db.Model):
     )
 
     # If user A likes user B, this is user B
-    liked_user_id=db.Column(
+    liked_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         primary_key=True,
@@ -63,45 +70,45 @@ class User(db.Model):
 
     __tablename__ = 'users'
 
-    id= db.Column(
+    id = db.Column(
         db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
-    first_name=db.Column(
+    first_name = db.Column(
         db.String(15),
         nullable=False
     )
 
-    last_name=db.Column(
+    last_name = db.Column(
         db.String(25),
         nullable=False
     )
 
-    username=db.Column(
+    username = db.Column(
         db.String(25),
         nullable=False,
         unique=True
     )
 
-    password=db.Column(
+    password = db.Column(
         db.Text,
         nullable=False
     )
 
-    profile_image=db.Column(
+    profile_image = db.Column(
         db.Text,
         nullable=True,
         default=DEFAULT_IMAGE_URL
     )
 
-    zip_code=db.Column(
+    zip_code = db.Column(
         db.String(10),
         nullable=False
     )
 
-    friend_radius=db.Column(
+    friend_radius = db.Column(
         db.Integer,
         db.CheckConstraint("friend_radius>0"),
         nullable=True
@@ -152,25 +159,44 @@ class User(db.Model):
                     zip_code=zip_code,
                     friend_radius=friend_radius)
 
+        payload = {
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+            'iat': datetime.datetime.utcnow(),
+            'sub': user.id
+        }
+
         db.session.add(user)
         db.session.commit()
-        return user
+
+        return jwt.encode(
+            payload,
+            os.environ.get('SECRET_KEY'),
+            algorithm='HS256'
+        )
 
     @classmethod
     def validate_login(cls, username, password):
         '''Checks if user credentials match a set in db, returns user or false'''
 
-        #Warbler authenticate method
+        # Warbler authenticate method
         user = cls.query.filter_by(username=username).one_or_none()
 
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
-                return user
+                payload = {
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+                    'iat': datetime.datetime.utcnow(),
+                    'sub': user.id
+                }
+
+                return jwt.encode(
+                    payload,
+                    os.environ.get('SECRET_KEY'),
+                    algorithm='HS256'
+                )
 
         return False
-
-
 
 
 class UserInterests(db.Model):
@@ -178,80 +204,76 @@ class UserInterests(db.Model):
 
     __tablename__ = 'user_interests'
 
-    id=db.Column(
+    id = db.Column(
         db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
-    user_id=db.Column(
+    user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         nullable=False
     )
 
-    interest=db.Column(
+    interest = db.Column(
         db.String(40),
         nullable=False
     )
+
 
 class UserHobbies(db.Model):
     '''Model for user-hobby combinations'''
 
     __tablename__ = 'user_hobbies'
 
-    id=db.Column(
+    id = db.Column(
         db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
-    user_id=db.Column(
+    user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         nullable=False
     )
 
-    hobby=db.Column(
+    hobby = db.Column(
         db.String(40),
         nullable=False
     )
+
 
 class Messages(db.Model):
     '''Model for messages'''
 
     __tablename__ = 'messages'
 
-    id=db.Column(
+    id = db.Column(
         db.Integer,
         primary_key=True,
         autoincrement=True
     )
 
-    sending_user_id=db.Column(
+    sending_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         nullable=False
     )
 
-    receiving_user_id=db.Column(
+    receiving_user_id = db.Column(
         db.Integer,
         db.ForeignKey('users.id'),
         nullable=False
     )
 
-    subject=db.Column(
+    subject = db.Column(
         db.String(100),
         nullable=False
     )
 
-    body=db.Column(
+    body = db.Column(
         db.Text,
         nullable=False
     )
-
-
-
-
-
-
