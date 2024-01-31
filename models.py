@@ -1,5 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy, CheckConstraint
+from flask_bcrypt import Bcrypt
 
+bcrypt = Bcrypt()
 DEFAULT_IMAGE_URL='https://images.unsplash.com/photo-1509987300714-11c90a6d40e7?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' #TODO: Populate this
 
 
@@ -128,6 +130,45 @@ class User(db.Model):
         friends = [friend for friend in likes if friend in liked_by]
 
         return friends
+
+    @classmethod
+    def signup(cls,
+               first_name,
+               last_name,
+               username,
+               password,
+               zip_code,
+               friend_radius,
+               profile_image=DEFAULT_IMAGE_URL
+               ):
+        '''Hashes password and adds user to db. Returns user'''
+
+        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        user = User(first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    password=hashed_pwd,
+                    profile_image=profile_image,
+                    zip_code=zip_code,
+                    friend_radius=friend_radius)
+
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    @classmethod
+    def validate_login(cls, username, password):
+        '''Checks if user credentials match a set in db, returns user or false'''
+
+        #Warbler authenticate method
+        user = cls.query.filter_by(username=username).one_or_none()
+
+        if user:
+            is_auth = bcrypt.check_password_hash(user.password, password)
+            if is_auth:
+                return user
+
+        return False
 
 
 
