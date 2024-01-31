@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy, CheckConstraint
 
-DEFAULT_IMAGE_URL='' #TODO: Populate this
+DEFAULT_IMAGE_URL='https://images.unsplash.com/photo-1509987300714-11c90a6d40e7?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' #TODO: Populate this
 
 
 db = SQLAlchemy()
@@ -11,6 +11,49 @@ def connect_db(app):
     app.app_context().push()
     db.app = app
     db.init_app(app)
+
+
+class UserDislikes(db.Model):
+    '''Model for users that have voted no on another'''
+
+    __tablename__ = 'disliked_users'
+
+    # If user A dislikes user B, this is user A
+    disliking_user_id=db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True,
+        nullable=False
+    )
+
+    # If user A dislikes user B, this is user B
+    disliked_user_id=db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True,
+        nullable=False
+    )
+
+class UserLikes(db.Model):
+    '''Model for users that have voted yes on another'''
+
+    __tablename__ = 'liked_users'
+
+    # If user A likes user B, this is user A
+    liking_user_id=db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True,
+        nullable=False
+    )
+
+    # If user A likes user B, this is user B
+    liked_user_id=db.Column(
+        db.Integer,
+        db.ForeignKey('users.id'),
+        primary_key=True,
+        nullable=False
+    )
 
 
 class User(db.Model):
@@ -62,47 +105,32 @@ class User(db.Model):
         nullable=True
     )
 
-class UserDislikes(db.Model):
-    '''Model for users that have voted no on another'''
-
-    __tablename__ = 'disliked_users'
-
-    # If user A dislikes user B, this is user A
-    disliking_user_id=db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),
-        primary_key=True,
-        nullable=False
+    likes = db.relationship(
+        'User',
+        secondary='liked_users',
+        primaryjoin=(UserLikes.liking_user_id == id),
+        secondaryjoin=(UserLikes.liked_user_id == id),
+        backref='liked_by'
     )
 
-    # If user A dislikes user B, this is user B
-    disliked_user_id=db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),
-        primary_key=True,
-        nullable=False
+    dislikes = db.relationship(
+        'User',
+        secondary='disliked_users',
+        primaryjoin=(UserDislikes.disliking_user_id == id),
+        secondaryjoin=(UserDislikes.disliked_user_id == id),
+        backref='disliked_by'
     )
 
-class UserLikes(db.Model):
-    '''Model for users that have voted yes on another'''
+    def getFriends(self):
+        likes = self.likes
+        liked_by = self.liked_by
 
-    __tablename__ = 'liked_users'
+        friends = [friend for friend in likes if friend in liked_by]
 
-    # If user A likes user B, this is user A
-    liking_user_id=db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),
-        primary_key=True,
-        nullable=False
-    )
+        return friends
 
-    # If user A likes user B, this is user B
-    liked_user_id=db.Column(
-        db.Integer,
-        db.ForeignKey('users.id'),
-        primary_key=True,
-        nullable=False
-    )
+
+
 
 class UserInterests(db.Model):
     '''Model for user-interest combinations'''
