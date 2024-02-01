@@ -145,6 +145,7 @@ def add_photo():
     print('REQUEST.files',request.files)
 
     print('request =', request)
+    print('REQUEST.FORM', request.form)
 
     filepath = request.files['filepath']
     object_name = filepath.filename
