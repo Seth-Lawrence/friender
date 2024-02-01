@@ -147,20 +147,19 @@ def add_photo():
     print('request =', request)
 
     filepath = request.files['filepath']
-    object_name = request.form['object_name']
+    object_name = filepath.filename
 
     print('FILEPATH',filepath)
     print('OBJECT_NAME',object_name)
 
 
-
+    filepath.save('_temp/a.jpg')
     # try:
-    # with open(filepath.read, 'rb') as f:
-    with filepath.read() as f:
+    with open('_temp/a.jpg', 'rb') as f:
         s3.upload_fileobj(f, os.environ.get("BUCKET"), object_name)
-        return jsonify({
-            'URL': f'{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
-            })
+    return jsonify({
+        'URL': f'{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
+        })
     # except:
     #     return jsonify({'upload': 'failed'})
 
