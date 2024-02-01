@@ -61,8 +61,10 @@ def logout():
 def get_users():
     '''gets all users returns json of users'''
     users = User.query.all()
-    return jsonify(users=users)
 
+    serialized = [user.serialize() for user in users]
+
+    return jsonify(users=serialized)
 
 @app.get("/api/users/<int:id>")
 def get_user_by_id(id):
@@ -70,7 +72,9 @@ def get_user_by_id(id):
 
     user = User.query.filter(User.id==id).one_or_none()
 
-    return jsonify(user=user)
+    serialized = user.serialize()
+
+    return jsonify(user=serialized)
 
 
 
@@ -105,19 +109,19 @@ def like(id):
     token = request.json['token']
 
     liking_user = User.validate_token(token)
-    liking_user.likes.push(id)
+    liking_user.likes.append(id)
     db.session.add(liking_user)
     db.session.commit()
     return jsonify(liked_user_id=id)
 
 
 @app.post('/api/users/<int:id>/dislike')
-def dislike():
+def dislike(id):
     '''dislikes user, returning disliked_user_id'''
     token = request.json['token']
 
     disliking_user = User.validate_token(token)
-    disliking_user.likes.push(id)
+    disliking_user.likes.append(id)
     db.session.add(disliking_user)
     db.session.commit()
     return jsonify(disliked_user_id=id)

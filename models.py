@@ -140,6 +140,18 @@ class User(db.Model):
 
         return friends
 
+    def serialize(self):
+        return {
+         'id':self.id,
+         'first_name':self.first_name,
+         'last_name':self.last_name,
+         'username': self.username,
+         'profile_image':self.profile_image,
+         'likes': self.likes,
+         'dislikes':self.dislikes,
+         'friends':self.getFriends()
+        }
+
     @classmethod
     def signup(cls,
                first_name,
@@ -205,16 +217,20 @@ class User(db.Model):
         '''Checks if token is valid and if user is in db, returns user if so
         otherwise returns false'''
 
-        username_from_token = jwt.decode(token,
+        tokenData = jwt.decode(token,
                                          os.environ.get('SECRET_KEY'),
                                          algorithms=['HS256'])
 
-        user = User.query.filter(User.username==username_from_token).one_or_none()
+        user = User.query.filter(User.username==tokenData['sub']).one_or_none()
 
         if user:
             return user
         else:
             return False
+
+
+
+
 
 
 class UserInterests(db.Model):
