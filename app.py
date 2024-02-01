@@ -2,9 +2,11 @@ import os
 import boto3
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from models import db, connect_db, User, DEFAULT_IMAGE_URL
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql:///friender')
@@ -140,8 +142,8 @@ def dislike(id):
 def add_photo():
     '''Uploads a photo to AWS S3'''
 
-    filepath = request.json['filepath']
-    object_name = request.json.get('object_name', filepath)
+    filepath = request.form['filepath']
+    object_name = request.form['object_name']
 
     try:
         s3.upload_file(filepath, os.environ.get("BUCKET"), object_name)
