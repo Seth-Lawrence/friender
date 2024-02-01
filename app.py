@@ -1,4 +1,5 @@
 import os
+import boto3
 
 from flask import Flask, request, jsonify
 from models import db, connect_db, User, DEFAULT_IMAGE_URL
@@ -8,6 +9,13 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
     'DATABASE_URL', 'postgresql:///friender')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+s3 = boto3.client(
+  "s3",
+  os.environ.get('AWS_DEFAULT_REGION'),
+  aws_access_key_id=os.environ.get('AWS_ACCESS_KEY'),
+  aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+)
 
 connect_db(app)
 
@@ -126,4 +134,20 @@ def dislike(id):
     db.session.commit()
     return jsonify(disliked_user_id=id)
 
+### IMAGE ROUTES
+
+@app.post('/api/photos')
+def add_photo():
+    '''Uploads a photo to AWS S3'''
+
+    filepath = request.json['filepath']
+    object_name = request.json.get('object_name', filepath)
+
+    try:
+        s3.upload_file(filepath, os.environ.get("BUCKET"), object_name)
+        return jsonify({
+            'URL': f'{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
+            })
+    except:
+        return jsonify({'upload': 'failed'})
 
