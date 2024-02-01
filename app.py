@@ -142,14 +142,25 @@ def dislike(id):
 def add_photo():
     '''Uploads a photo to AWS S3'''
 
-    filepath = request.form['filepath']
+    print('REQUEST.files',request.files)
+
+    print('request =', request)
+
+    filepath = request.files['filepath']
     object_name = request.form['object_name']
 
-    try:
-        s3.upload_file(filepath, os.environ.get("BUCKET"), object_name)
+    print('FILEPATH',filepath)
+    print('OBJECT_NAME',object_name)
+
+
+
+    # try:
+    # with open(filepath.read, 'rb') as f:
+    with filepath.read() as f:
+        s3.upload_fileobj(f, os.environ.get("BUCKET"), object_name)
         return jsonify({
             'URL': f'{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
             })
-    except:
-        return jsonify({'upload': 'failed'})
+    # except:
+    #     return jsonify({'upload': 'failed'})
 
