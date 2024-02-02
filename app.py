@@ -119,7 +119,8 @@ def like(id):
     token = request.json['token']
 
     liking_user = User.validate_token(token)
-    liking_user.likes.append(id)
+    liked_user = User.query.filter(User.id==id).one_or_none()
+    liking_user.likes.append(liked_user)
     db.session.add(liking_user)
     db.session.commit()
     return jsonify(liked_user_id=id)

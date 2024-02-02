@@ -147,9 +147,17 @@ class User(db.Model):
          'last_name':self.last_name,
          'username': self.username,
          'profile_image':self.profile_image,
-         'likes': self.likes,
-         'dislikes':self.dislikes,
-         'friends':self.getFriends()
+        #  'likes': [like.id for like in self.likes],
+        #  'dislikes':[dislike.id for dislike in self.dislikes],
+        #  'friends':self.getFriends()
+        }
+
+    def basic_serialize(self):
+        return {
+        'id':self.id,
+        'first_name':self.first_name,
+        'last_name':self.last_name,
+        'username': self.username
         }
 
     @classmethod
