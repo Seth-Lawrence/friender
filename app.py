@@ -49,10 +49,10 @@ def add_user():
 
 @app.post('/api/login')
 def login():
-    user_creds = request.body
+    user_creds = request.json
 
-    username = user_creds.username
-    password = user_creds.password
+    username = user_creds['username']
+    password = user_creds['password']
 
     token = User.validate_login(username, password) # token or false
 
