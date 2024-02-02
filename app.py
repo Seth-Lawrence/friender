@@ -160,7 +160,7 @@ def add_photo():
     with open('_temp/a.jpg', 'rb') as f:
         s3.upload_fileobj(f, os.environ.get("BUCKET"), object_name)
     return jsonify({
-        'URL': f'{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
+        'URL': f'https://{os.environ.get("BUCKET")}.s3.amazonaws.com/{object_name}'
         })
     # except:
     #     return jsonify({'upload': 'failed'})
